@@ -5,6 +5,6 @@ ODE_ROOT=$HOME/repo/opende.git
 
     LD_LIBRARY_PATH=$HOME/install/xkaapi_rose/lib \
     KAAPI_STACKSIZE=268435456 \
-    KAAPI_CPUSET=0,1 \
+    KAAPI_CPUSET=0:$1 \
     ./demo_step
 )

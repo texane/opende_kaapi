@@ -1,0 +1,46 @@
+[sequential]
+
+Timer Report (2.00 ns resolution)
+------------
+preprocessing              29.59ms  38.94%  (avg   29.12ms  38.48%)
+create J                    0.01ms   0.01%  (avg    0.01ms   0.01%)
+compute A                   0.01ms   0.02%  (avg    0.01ms   0.02%)
+compute rhs                10.92ms  14.36%  (avg   10.97ms  14.51%)
+solving LCP problem         0.03ms   0.04%  (avg    0.04ms   0.05%)
+compute constraint force    0.00ms   0.00%  (avg    0.00ms   0.00%)
+compute velocity update    10.93ms  14.38%  (avg   11.08ms  14.64%)
+update position            19.84ms  26.11%  (avg   19.69ms  26.02%)
+tidy up                     4.67ms   6.14%  (avg    4.75ms   6.27%)
+TOTAL                      75.99ms 100.00%
+
+
+[KAAPI_CPUSET=1]
+
+Timer Report (2.00 ns resolution)
+------------
+preprocessing              28.50ms  37.92%  (avg   29.13ms  38.35%)
+create J                    0.01ms   0.01%  (avg    0.01ms   0.01%)
+compute A                   0.01ms   0.02%  (avg    0.01ms   0.02%)
+compute rhs                10.83ms  14.41%  (avg   10.96ms  14.44%)
+solving LCP problem         0.03ms   0.04%  (avg    0.04ms   0.05%)
+compute constraint force    0.00ms   0.00%  (avg    0.00ms   0.00%)
+compute velocity update    11.06ms  14.72%  (avg   11.11ms  14.62%)
+update position            19.99ms  26.60%  (avg   19.88ms  26.18%)
+tidy up                     4.72ms   6.29%  (avg    4.81ms   6.34%)
+TOTAL                      75.16ms 100.00%
+
+
+[KAAPI_CPUSET=0,1]
+
+Timer Report (2.00 ns resolution)
+------------
+preprocessing              21.08ms  33.86%  (avg   21.72ms  34.26%)
+create J                    0.01ms   0.01%  (avg    0.01ms   0.01%)
+compute A                   0.02ms   0.03%  (avg    0.02ms   0.03%)
+compute rhs                14.43ms  23.18%  (avg   13.99ms  22.07%)
+solving LCP problem         0.04ms   0.07%  (avg    0.05ms   0.08%)
+compute constraint force    0.01ms   0.01%  (avg    0.01ms   0.01%)
+compute velocity update     9.68ms  15.55%  (avg   10.00ms  15.77%)
+update position            13.18ms  21.17%  (avg   13.67ms  21.57%)
+tidy up                     3.80ms   6.11%  (avg    3.93ms   6.19%)
+TOTAL                      62.26ms 100.00%

@@ -1,0 +1,29 @@
+. todo
+maintenir un git de ode
+modification splitter (si le steal echoue, retenter N fois puis abort,
+pas indefiniment donc)
+compilation idkoiff, idfreeze
+tests performance
+affinite
+
+. code structure
+ . dxStepWorkingMemory is a structure of World used
+ to manage memory allocations
+ . denoted wmem in the following
+ . from wmem, the preallocations can be retrieved
+
+. callchain
+ . ode.cpp::dWorldStep
+  . dxReallocateWorldProcessContext
+  . dxProcessIslands
+
+util.cpp::dxReallocateWorldProcessContext
+
+util.cpp::EstimateIslandsProcessingMemoryRequirements
+ -> turn the body and joint list into an array
+ -> SavePreallocation affects m_pBodies to bodies
+
+. todo:
+ -> actuellement les bodies sont eclates en memoire
+ et au plus 3 sont passes a la fonction de stepping,
+ empechant tout processing parallele

@@ -526,6 +526,24 @@ static size_t BuildIslandsAndEstimateStepperMemoryRequirements(dxWorldProcessCon
 // bodies will not be included in the simulation. disabled bodies are
 // re-enabled if they are found to be part of an active island.
 
+static void count_elments
+(int islandcount, int const *islandsizes, int& bcount, int& jcount)
+{
+  static const int sizeelements = 2;
+
+  int const *const sizesend = islandsizes + islandcount * sizeelements;
+  int const *sizescurr = islandsizes;
+
+  bcount = 0;
+  jcount = 0;
+
+  for (; sizescurr != sizesend; sizescurr += sizeelements)
+  {
+    bcount += sizescurr[0];
+    jcount += sizescurr[1];
+  }
+}
+
 void dxProcessIslands (dxWorld *world, dReal stepsize, dstepper_fn_t stepper)
 {
   const int sizeelements = 2;
@@ -544,6 +562,8 @@ void dxProcessIslands (dxWorld *world, dReal stepsize, dstepper_fn_t stepper)
   dxBody *const *bodystart = body;
   dxJoint *const *jointstart = joint;
 
+#if 0 // original loop
+
   int const *const sizesend = islandsizes + islandcount * sizeelements;
   for (int const *sizescurr = islandsizes; sizescurr != sizesend; sizescurr += sizeelements) {
     int bcount = sizescurr[0];
@@ -557,6 +577,18 @@ void dxProcessIslands (dxWorld *world, dReal stepsize, dstepper_fn_t stepper)
     bodystart += bcount;
     jointstart += jcount;
   }
+
+#else // count execute loop
+
+  int bcount, jcount;
+  count_elments(islandcount, islandsizes, bcount, jcount);
+
+  BEGIN_STATE_SAVE(context, stepperstate) {
+    // now do something with body and joint lists
+    stepper (context,world,bodystart,bcount,jointstart,jcount,stepsize);
+  } END_STATE_SAVE(context, stepperstate);
+
+#endif // original loop
 
   context->CleanupContext();
   dIASSERT(context->IsStructureValid());
@@ -729,7 +761,8 @@ bool dxReallocateWorldProcessContext (dxWorld *world,
   dIASSERT(islandsreq == dEFFICIENT_SIZE(islandsreq));
   dIASSERT(sesize == dEFFICIENT_SIZE(sesize));
 
-  size_t stepperestimatereq = islandsreq + sesize;
+  // enlarge, otherwise subsequent stepper array allocations fail
+  size_t stepperestimatereq = islandsreq + sesize + (10 * 1024 * 1024);
   context = InternalReallocateWorldProcessContext(context, stepperestimatereq, memmgr, 1.0f, reserveinfo->m_uiReserveMinimum);
   
   if (context)

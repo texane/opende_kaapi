@@ -47,20 +47,40 @@
 
 // some constants
 
-#define NUM 10			// number of bodies
-#define NUMJ 9			// number of joints
-#define SIDE (0.2)		// side length of a box
+#define NUM  (16384 * 2)	// number of bodies
+#define NUMJ 1			// number of joints
+#define SIDE (10.0)		// side length of a box
 #define MASS (1.0)		// mass of a box
-#define RADIUS (0.1732f)	// sphere radius
+#define RADIUS (0.1)		// sphere radius
 
 
 
 // dynamics and collision objects
 
 static dWorldID world=0;
+
+#if 0
+
 static dBodyID body[NUM];
 static dJointID joint[NUMJ];
+static char linked[NUM * NUM];
 
+#else
+
+#include <stdlib.h>
+
+static dBodyID* body;
+static dJointID* joint;
+static char* linked;
+
+static void alloc_arrays(void)
+{
+  body = (dBodyID*)malloc(NUM * sizeof(dBodyID));
+  joint = (dJointID*)malloc(NUMJ * sizeof(dJointID));
+  linked = (char*)malloc(NUM * NUM * sizeof(char));
+}
+
+#endif
 
 // create the test system
 
@@ -75,8 +95,11 @@ void createTest()
   for (i=0; i<NUM; i++) {
     // create bodies at random position and orientation
     body[i] = dBodyCreate (world);
-    dBodySetPosition (body[i],dRandReal()*2-1,dRandReal()*2-1,
-		      dRandReal()*2+RADIUS);
+    // dBodySetPosition (body[i],dRandReal()*2-1,dRandReal()*2-1,
+    // 		      dRandReal()*2+RADIUS);
+    dBodySetPosition (body[i],dRandReal()*SIDE-1,dRandReal()*SIDE-1,
+    		      dRandReal()*SIDE+RADIUS);
+
     dReal q[4];
     for (j=0; j<4; j++) q[j] = dRandReal()*2-1;
     dBodySetQuaternion (body[i],q);
@@ -100,7 +123,6 @@ void createTest()
 
   // create ball-n-socket joints at random positions, linking random bodies
   // (but make sure not to link the same pair of bodies twice)
-  char linked[NUM*NUM];
   for (i=0; i<NUM*NUM; i++) linked[i] = 0;
   for (i=0; i<NUMJ; i++) {
     int b1,b2;
@@ -131,8 +153,8 @@ static void start()
 {
   dAllocateODEDataForThread(dAllocateMaskAll);
 
-  static float xyz[3] = {2.6117f,-1.4433f,2.3700f};
-  static float hpr[3] = {151.5000f,-30.5000f,0.0000f};
+  static float xyz[3] = {14.6117f,-6.4433f,9.3700f};
+  static float hpr[3] = {140.5000f,-20.5000f,0.0000f};
   dsSetViewpoint (xyz,hpr);
 }
 
@@ -146,6 +168,7 @@ static void simLoop (int pause)
     int i;
     const dReal scale1 = 5;
     const dReal scale2 = 5;
+
     for (i=0; i<NUM; i++) {
       dBodyAddForce (body[i],
 		     scale1*(dRandReal()*2-1),
@@ -179,14 +202,19 @@ int main (int argc, char **argv)
   fn.stop = 0;
   fn.path_to_textures = DRAWSTUFF_TEXTURE_PATH;
 
+  alloc_arrays();
+
   dInitODE2(0);
   dRandSetSeed (time(0));
+
   createTest();
 
   // run simulation
+#pragma kaapi parallel
   dsSimulationLoop (argc,argv,352,288,&fn);
 
   dWorldDestroy (world);
   dCloseODE();
+
   return 0;
 }

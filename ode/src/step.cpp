@@ -35,7 +35,7 @@
 //****************************************************************************
 // misc defines
 
-//#define TIMING
+#define TIMING
 
 
 #ifdef TIMING
@@ -201,6 +201,7 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
   {
     // number all bodies in the body list - set their tag values
     int i;
+#pragma kaapi loop
     for (i=0; i<nb; ++i) body[i]->tag = i;
   }
 
@@ -214,6 +215,8 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
   { // Identical to QuickStep
     dReal *invIrow = invI;
     dxBody *const *const bodyend = body + nb;
+
+#pragma kaapi loop
     for (dxBody *const *bodycurr = body; bodycurr != bodyend; invIrow += 12, ++bodycurr) {
       dMatrix3 tmp;
       dxBody *b = *bodycurr;
@@ -241,6 +244,7 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
     dxBody *const *const bodyend = body + nb;
     dReal gravity_x = world->gravity[0];
     if (gravity_x) {
+#pragma kaapi loop
       for (dxBody *const *bodycurr = body; bodycurr != bodyend; ++bodycurr) {
         dxBody *b = *bodycurr;
         if ((b->flags & dxBodyNoGravity)==0) {
@@ -250,6 +254,7 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
     }
     dReal gravity_y = world->gravity[1];
     if (gravity_y) {
+#pragma kaapi loop
       for (dxBody *const *bodycurr = body; bodycurr != bodyend; ++bodycurr) {
         dxBody *b = *bodycurr;
         if ((b->flags & dxBodyNoGravity)==0) {
@@ -259,6 +264,7 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
     }
     dReal gravity_z = world->gravity[2];
     if (gravity_z) {
+#pragma kaapi loop
       for (dxBody *const *bodycurr = body; bodycurr != bodyend; ++bodycurr) {
         dxBody *b = *bodycurr;
         if ((b->flags & dxBodyNoGravity)==0) {
@@ -788,11 +794,12 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
     IFTIMING(dTimerNow ("compute velocity update"));
 
     // add fe to cforce and multiply cforce by stepsize
-    dReal data[4];
     const dReal *invIrow = invI;
     dReal *cforcecurr = cforce;
     dxBody *const *const bodyend = body + nb;
+#pragma kaapi loop
     for (dxBody *const *bodycurr = body; bodycurr != bodyend; invIrow+=12, cforcecurr+=8, ++bodycurr) {
+      dReal data[4];
       dxBody *b = *bodycurr;
 
       dReal body_invMass_mul_stepsize = stepsize * b->invMass;
@@ -808,6 +815,7 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
     // (over the given timestep)
     IFTIMING(dTimerNow ("update position"));
     dxBody *const *const bodyend = body + nb;
+#pragma kaapi loop
     for (dxBody *const *bodycurr = body; bodycurr != bodyend; ++bodycurr) {
       dxBody *b = *bodycurr;
       dxStepBody (b,stepsize);
@@ -819,6 +827,7 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
 
     // zero all force accumulators
     dxBody *const *const bodyend = body + nb;
+#pragma kaapi loop
     for (dxBody *const *bodycurr = body; bodycurr != bodyend; ++bodycurr) {
       dxBody *b = *bodycurr;
       b->facc[0] = 0;
@@ -927,5 +936,3 @@ size_t dxEstimateStepMemoryRequirements (dxBody * const *body, int nb, dxJoint *
 
   return res;
 }
-
-

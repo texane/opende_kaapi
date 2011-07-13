@@ -121,6 +121,17 @@
 		inline_	const	IndexedTriangle*	GetTris()			const	{ return mTris;			}
 		inline_	const	Point*				GetVerts()			const	{ return mVerts;		}
 
+	private:
+#ifndef OPC_USE_CALLBACKS
+#ifdef OPC_USE_STRIDE
+	void FetchTriangleFromSingles(VertexPointers& vp, udword index, ConversionArea vc) const;
+	void FetchTriangleFromDoubles(VertexPointers& vp, udword index, ConversionArea vc) const;
+	void FetchExTriangleFromSingles(VertexPointersEx& vpe, udword index, ConversionArea vc) const;
+	void FetchExTriangleFromDoubles(VertexPointersEx& vpe, udword index, ConversionArea vc) const;
+#endif
+#endif
+
+	public:
 	#ifdef OPC_USE_STRIDE
 		// Strides settings
 
@@ -164,24 +175,25 @@
 		 *	\param		vc      [in,out] storage required for data conversion (pass local variable with same scope as \a vp, as \a vp may point to this memory on return)
 		 */
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		inline_			void				GetTriangle(VertexPointers& vp, udword index, ConversionArea vc)	const
+inline_	void GetTriangle
+(VertexPointers& vp, udword index, ConversionArea vc)	const
 											{
 #ifdef OPC_USE_CALLBACKS
-												(mObjCallback)(index, vp, mUserData);
+											  (mObjCallback)(index, vp, mUserData);
 #else
-	#ifdef OPC_USE_STRIDE
-												// Since there was conditional statement "if (Single)" which was unpredictable for compiler 
-												// and required both branches to be always generated what made inlining a questionable 
-												// benefit, I consider it better to introduce a forced call
-												// but get rig of branching and dead code injection.
-												((*this).*mFetchTriangle)(vp, index, vc);
-	#else
-												const Point* Verts = GetVerts();
-												const IndexedTriangle* T = &mTris[index];
-												vp.Vertex[0] = &Verts[T->mVRef[0]];
-												vp.Vertex[1] = &Verts[T->mVRef[1]];
-												vp.Vertex[2] = &Verts[T->mVRef[2]];
-	#endif
+#ifdef OPC_USE_STRIDE
+											  // Since there was conditional statement "if (Single)" which was unpredictable for compiler 
+											  // and required both branches to be always generated what made inlining a questionable 
+											  // benefit, I consider it better to introduce a forced call
+											  // but get rig of branching and dead code injection.
+											  ((*this).*mFetchTriangle)(vp, index, vc);
+#else
+											  const Point* Verts = GetVerts();
+											  const IndexedTriangle* T = &mTris[index];
+											  vp.Vertex[0] = &Verts[T->mVRef[0]];
+											  vp.Vertex[1] = &Verts[T->mVRef[1]];
+											  vp.Vertex[2] = &Verts[T->mVRef[2]];
+#endif
 #endif
 											}
 
@@ -214,16 +226,6 @@
 	#endif
 #endif
 											}
-
-		private:
-#ifndef OPC_USE_CALLBACKS
-	#ifdef OPC_USE_STRIDE
-		void				FetchTriangleFromSingles(VertexPointers& vp, udword index, ConversionArea vc) const;
-		void				FetchTriangleFromDoubles(VertexPointers& vp, udword index, ConversionArea vc) const;
-		void				FetchExTriangleFromSingles(VertexPointersEx& vpe, udword index, ConversionArea vc) const;
-		void				FetchExTriangleFromDoubles(VertexPointersEx& vpe, udword index, ConversionArea vc) const;
-	#endif
-#endif
 
 		public:
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

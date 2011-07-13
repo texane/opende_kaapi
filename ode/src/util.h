@@ -247,8 +247,13 @@ private:
   ~dxStepWorkingMemory() // Use Release() instead
   {
     if (m_ppcProcessingContext) dxFreeWorldProcessContext(m_ppcProcessingContext);
+#if 0
     delete m_priReserveInfo;
     delete m_pmmMemoryManager;
+#else
+    free(m_priReserveInfo);
+    free(m_pmmMemoryManager);
+#endif
   }
 
 public:
@@ -263,7 +268,11 @@ public:
     dIASSERT(m_uiRefCount != 0);
     if (--m_uiRefCount == 0)
     {
+#if 0
       delete this;
+#else
+      free(this);
+#endif
     }
   }
 
@@ -290,7 +299,11 @@ public:
   }
   void ResetMemoryReserveInfoToDefault()
   {
+#if 0
     if (m_priReserveInfo) { delete m_priReserveInfo; m_priReserveInfo = NULL; }
+#else
+    if (m_priReserveInfo) { free(m_priReserveInfo); m_priReserveInfo = NULL; }
+#endif
   }
 
   const dxWorldProcessMemoryManager *GetMemoryManager() const { return m_pmmMemoryManager; }
@@ -304,7 +317,11 @@ public:
   }
   void ResetMemoryManagerToDefault()
   {
+#if 0
     if (m_pmmMemoryManager) { delete m_pmmMemoryManager; m_pmmMemoryManager = NULL; }
+#else
+    if (m_pmmMemoryManager) { free(m_pmmMemoryManager); m_pmmMemoryManager = NULL; }
+#endif
   }
 
 private:

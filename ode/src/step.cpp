@@ -677,6 +677,7 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
         dReal *tmp1curr = tmp1;
         const dReal *invIrow = invI;
         dxBody *const *const bodyend = body + nb;
+#pragma kaapi loop
         for (dxBody *const *bodycurr = body; bodycurr != bodyend; tmp1curr+=8, invIrow+=12, ++bodycurr) {
           dxBody *b = *bodycurr;
           for (int j=0; j<3; ++j) tmp1curr[j] = b->facc[j]*b->invMass + b->lvel[j]*stepsizeRecip;

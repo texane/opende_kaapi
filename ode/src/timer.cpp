@@ -109,15 +109,11 @@ static inline void getClockCount (unsigned long cc[2])
 {
 #ifndef X86_64_SYSTEM	
   asm volatile (
-	"rdtsc\n"
-	"movl %%eax,(%%esi)\n"
-	"movl %%edx,4(%%esi)\n"
+	"rdtsc; movl %%eax,(%%esi); movl %%edx,4(%%esi)"
 	: : "S" (cc) : "%eax","%edx","cc","memory");
 #else
   asm volatile (
-	"rdtsc\n"
-	"movl %%eax,(%%rsi)\n"
-	"movl %%edx,4(%%rsi)\n"
+	"rdtsc; movl %%eax,(%%rsi); movl %%edx,4(%%rsi);"
 	: : "S" (cc) : "%eax","%edx","cc","memory");
 #endif  
 }
@@ -127,17 +123,11 @@ static inline void serialize()
 {
 #ifndef X86_64_SYSTEM
   asm volatile (
-	"mov $0,%%eax\n"
-	"push %%ebx\n"
-	"cpuid\n"
-	"pop %%ebx\n"
+	"mov $0,%%eax; push %%ebx; cpuid; pop %%ebx"
 	: : : "%eax","%ecx","%edx","cc","memory");
 #else
   asm volatile (
-	"mov $0,%%rax\n"
-	"push %%rbx\n"
-	"cpuid\n"
-	"pop %%rbx\n"
+	"mov $0,%%rax; push %%rbx; cpuid; op %%rbx"
 	: : : "%rax","%rcx","%rdx","cc","memory");
 #endif
 }

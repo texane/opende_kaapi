@@ -1,0 +1,18 @@
+This is a fork from the OPENDE subversion repository (1827).
+It annotates some parts of the code for further compilation
+by the KACC compiler.
+
+It assumes you have the XKAAPI runtime and the KACC compiler
+installed in:
+$HOME/install/xkaapi_rose
+
+To compile, first run:
+$> sh autogen.sh in the opende topmost directory
+
+It creates the configure script. Then:
+$> ./xkaapi/scripts/do_configure.sh
+
+At the moment, the demo_step example is used. To make it:
+$> ./xkaapi/scripts/do_make.sh
+To run it:
+$> ./xkaapi/scripts/do_run.sh

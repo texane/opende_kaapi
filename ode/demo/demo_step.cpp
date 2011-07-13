@@ -47,7 +47,7 @@
 
 // some constants
 
-#define NUM  (16384 * 2)	// number of bodies
+#define NUM  16384		// number of bodies
 #define NUMJ 1			// number of joints
 #define SIDE (10.0)		// side length of a box
 #define MASS (1.0)		// mass of a box

@@ -35,7 +35,7 @@ case $1 in
 	    -c -o step.lo step.cpp
     )
 
-    $HOME/xkaapi_rose/bin/kacc $CFLAGS \
+    $HOME/install/xkaapi_rose/bin/kacc $CFLAGS \
 	-c -o ode/demo/demo_step.o ode/demo/demo_step.cpp ;
 
     ;;

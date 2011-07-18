@@ -816,7 +816,6 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
     // (over the given timestep)
     IFTIMING(dTimerNow ("update position"));
     dxBody *const *const bodyend = body + nb;
-#pragma kaapi loop
     for (dxBody *const *bodycurr = body; bodycurr != bodyend; ++bodycurr) {
       dxBody *b = *bodycurr;
       dxStepBody (b,stepsize);

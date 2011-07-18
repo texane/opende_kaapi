@@ -13,9 +13,11 @@ noinst_HEADERS = basket_geom.h texturepath.h world_geom3.h bunny_geom.h convex_b
                  icosahedron_geom.h
 
 noinst_PROGRAMS = \
-                demo_step
+                demo_step \
+                demo_space_stress
 
 demo_step_SOURCES = demo_step.cpp
+demo_space_stress_SOURCES = demo_space_stress.cpp
 
 if WIN32
 resources.o: $(top_srcdir)/drawstuff/src/resources.rc $(top_srcdir)/drawstuff/src/resource.h

@@ -762,7 +762,7 @@ bool dxReallocateWorldProcessContext (dxWorld *world,
   dIASSERT(sesize == dEFFICIENT_SIZE(sesize));
 
   // enlarge, otherwise subsequent stepper array allocations fail
-  size_t stepperestimatereq = islandsreq + sesize + (10 * 1024 * 1024);
+  size_t stepperestimatereq = islandsreq + sesize + (256 * 1024 * 1024);
   context = InternalReallocateWorldProcessContext(context, stepperestimatereq, memmgr, 1.0f, reserveinfo->m_uiReserveMinimum);
   
   if (context)

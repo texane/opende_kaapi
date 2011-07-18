@@ -40,7 +40,7 @@
 
 // some constants
 
-#define NUM 10000			// max number of objects
+#define NUM 500			// max number of objects
 #define DENSITY (5.0)		// density of all objects
 #define GPB 3			// maximum number of geometries per body
 #define MAX_CONTACTS 4		// maximum number of contact points per body
@@ -365,8 +365,8 @@ static void simLoop (int pause)
 {
   dsSetColor (0,0,2);
   dSpaceCollide (space,0,&nearCallback);
-  //if (!pause) dWorldStep (world,0.05);
-  if (!pause) dWorldQuickStep (world,0.05);
+  if (!pause) dWorldStep (world,0.05);
+  // if (!pause) dWorldQuickStep (world,0.05);
   //if (!pause) dWorldStepFast (world,0.05, 1);
 
   // remove all contact joints
@@ -425,6 +425,7 @@ int main (int argc, char **argv)
   }
 
   // run simulation
+#pragma kaapi parallel
   dsSimulationLoop (argc,argv,352,288,&fn);
 
   dJointGroupDestroy (contactgroup);

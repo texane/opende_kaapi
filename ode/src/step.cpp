@@ -418,6 +418,10 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
 
   int m = 0;
 
+  // at most 6 constraints per joint
+  int* const infom_integral = context->AllocateArray<int>((nj + 1) * 6);
+  if (nj) infom_integral[0] = 0;
+
   {
     int mcurr = 0;
     const dJointWithInfo1 *jicurr = jointiinfos;
@@ -425,6 +429,7 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
     for (int i = 0; jicurr != jiend; i++, ++jicurr) {
       jicurr->joint->tag = i;
       int jm = jicurr->info.m;
+      infom_integral[i + 1] = jm + infom_integral[i];
       mcurr += jm;
     }
 
@@ -501,10 +506,11 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
         Jinfo.fps = stepsizeRecip;
         Jinfo.erp = world->global_erp;
 
-        unsigned ofsi = 0;
         const dJointWithInfo1 *jicurr = jointiinfos;
         const dJointWithInfo1 *const jiend = jicurr + nj;
+#pragma kaapi loop
         for (; jicurr != jiend; ++jicurr) {
+	  const unsigned ofsi = infom_integral[nj - (int)(jiend - jicurr)];
           const int infom = jicurr->info.m;
           dReal *const J1row = J + 2*8*ofsi;
           Jinfo.J1l = J1row;
@@ -528,8 +534,6 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
             if (fival >= 0) 
               findex_ofsi[j] = fival + ofsi;
           }
-
-          ofsi += infom;
         }
       }
 
@@ -539,10 +543,11 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
           // compute A = J*invM*J'. first compute JinvM = J*invM. this has the same
           // format as J so we just go through the constraints in J multiplying by
           // the appropriate scalars and matrices.
-          unsigned ofsi = 0;
           const dJointWithInfo1 *jicurr = jointiinfos;
           const dJointWithInfo1 *const jiend = jicurr + nj;
+#pragma kaapi loop
           for (; jicurr != jiend; ++jicurr) {
+	    const unsigned ofsi = infom_integral[nj - (int)(jiend - jicurr)];
             const int infom = jicurr->info.m;
             dxJoint *joint = jicurr->joint;
             int b0 = joint->node[0].body->tag;
@@ -568,8 +573,6 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
                 Jdst += 8;
               }
             }
-
-            ofsi += infom;
           }
         }
 
@@ -635,10 +638,11 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
           // compute diagonal blocks of A
           const int mskip = dPAD(m);
 
-          unsigned ofsi = 0;
           const dJointWithInfo1 *jicurr = jointiinfos;
           const dJointWithInfo1 *const jiend = jicurr + nj;
+#pragma kaapi loop
           for (; jicurr != jiend; ++jicurr) {
+	    const unsigned ofsi = infom_integral[nj - (int)(jiend - jicurr)];
             const int infom = jicurr->info.m;
             dReal *Arow = A + (mskip+1)*ofsi;
             dReal *JinvMrow = JinvM + 2*8*ofsi;
@@ -647,8 +651,6 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
             if (jicurr->joint->node[1].body) {
               MultiplyAdd2_p8r (Arow, JinvMrow + 8*infom, Jrow + 8*infom, infom, infom, mskip);
             }
-
-            ofsi += infom;
           }
         }
 
@@ -657,6 +659,7 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
           const int mskip = dPAD(m);
 
           dReal *Arow = A;
+#pragma kaapi loop
           for (int i=0; i<m; Arow += mskip, ++i) {
             Arow[i] += cfm[i] * stepsizeRecip;
           }
@@ -699,7 +702,9 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
         unsigned ofsi = 0;
         const dJointWithInfo1 *jicurr = jointiinfos;
         const dJointWithInfo1 *const jiend = jicurr + nj;
+#pragma kaapi loop
         for (; jicurr != jiend; ++jicurr) {
+	  const unsigned ofsi = infom_integral[nj - (int)(jiend - jicurr)];
           const int infom = jicurr->info.m;
           dxJoint *joint = jicurr->joint;
 
@@ -709,8 +714,6 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
           if (joint->node[1].body) {
             MultiplySub0_p81 (rhscurr, Jrow + 8*infom, tmp1 + 8*joint->node[1].body->tag, infom);
           }
-
-          ofsi += infom;
         }
       }
     } END_STATE_SAVE(context, tmp1state);

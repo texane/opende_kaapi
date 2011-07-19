@@ -48,7 +48,7 @@
 // some constants
 
 #define NUM  16384		// number of bodies
-#define NUMJ 1			// number of joints
+#define NUMJ 2			// number of joints
 #define SIDE (10.0)		// side length of a box
 #define MASS (1.0)		// mass of a box
 #define RADIUS (0.1)		// sphere radius

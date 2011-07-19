@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-ODE_ROOT=$HOME/repo/opende.git
+ODE_ROOT=$HOME/repo/opende_kaapi ;
 
 cd $ODE_ROOT
 

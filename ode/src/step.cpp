@@ -689,6 +689,7 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
       {
         // init rhs -- this erases 'c' as they reside in the same memory!!!
         rhs = c;
+#pragma kaapi loop
         for (int i=0; i<m; ++i) rhs[i] = c[i]*stepsizeRecip;
         c = NULL; // set 'c' to NULL to prevent unexpected access
       }
@@ -816,6 +817,7 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
     // (over the given timestep)
     IFTIMING(dTimerNow ("update position"));
     dxBody *const *const bodyend = body + nb;
+#pragma kaapi loop
     for (dxBody *const *bodycurr = body; bodycurr != bodyend; ++bodycurr) {
       dxBody *b = *bodycurr;
       dxStepBody (b,stepsize);

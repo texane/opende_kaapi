@@ -1,16 +1,85 @@
-. code structure
- . dxStepWorkingMemory is a structure of World used
- to manage memory allocations
- . denoted wmem in the following
- . from wmem, the preallocations can be retrieved
+--
+. XKAAPI report: ODE library parallelisation using KACC
 
-. callchain
- . ode.cpp::dWorldStep
-  . dxReallocateWorldProcessContext
-  . dxProcessIslands
+--
+. automatic affine loop parallelisation
 
-util.cpp::dxReallocateWorldProcessContext
+--
+. problematic code constructs
 
-util.cpp::EstimateIslandsProcessingMemoryRequirements
- -> turn the body and joint list into an array
- -> SavePreallocation affects m_pBodies to bodies
+.. non affine loops and integrated variables
+Some affine loops bodies depend on non affine variables computed
+all along the iteration. For instance:
+
+{
+  int j = 0;
+  for (int i = 0; i < N; ++i)
+  {
+    f(i, j);
+    j += v[i].index;
+  }
+}
+
+In the ODE code, such construct are used. A joint may have up to 6
+constraints, making the iteration not affine, A solution is to
+precompute an integrated array of the indices, such that:
+i'[i + 1] = info[i].m i'[i] and i'[0] = 0;
+
+
+.. sections breaking parallelism in a loop
+Some loops cannot be parallelized due to sections breaking the parallelism.
+Such sections are often small. For instance, in the code below, f and h only
+operate on b[i] while g may have side effects, preventing the loop to
+be parallelized:
+
+{
+  for (i = 0; i < N; ++i)
+  {
+    f(b[i]);
+    g(b[i], globals);
+    h(b[i]);
+  }
+}
+
+Note that the order can be important.
+The obvious solution is to transform the above into 3 loops:
+{
+  for (i = 0; i < N; ++i) f(b[i]);
+  for (i = 0; i < N; ++i) g(b[i], globals);
+  for (i = 0; i < N; ++i) h(b[i]);
+}
+
+This may perform poorly regarding the cache, and if the order
+is not important, could be written as:
+{
+  for (i = 0; i < N; ++i)
+  {
+    f(b[i]);
+    h(b[i]);
+  }
+  for (i = 0; i < N; ++i) g(b[i], globals);
+}
+
+As far as the compiler is concerned, there is another issue.
+The code is often written as:
+{
+  F(b)
+  {
+    f(b[i]);
+    g(b[i], globals);
+    h(b[i]);
+  }
+
+  for (i = 0; i < N; ++i)
+  {
+    F(b[i]);
+  }
+}
+Since the compiler does not enter function calls in loop, this code
+cannot be parallelised. The solution is to introduce:
+#pragma kaapi inline (or follow or expand)
+
+.. non random access containers
+
+--
+. lcp solver

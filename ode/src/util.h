@@ -62,6 +62,9 @@
 #endif
 
 void dInternalHandleAutoDisabling (dxWorld *world, dReal stepsize);
+void dxStepBody_0 (dxBody *b, dReal h);
+void dxStepBody_1 (dxBody *b, dReal h);
+void dxStepBody_2 (dxBody *b, dReal h);
 void dxStepBody (dxBody *b, dReal h);
 
 

@@ -816,12 +816,41 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
     // update the position and orientation from the new linear/angular velocity
     // (over the given timestep)
     IFTIMING(dTimerNow ("update position"));
-    dxBody *const *const bodyend = body + nb;
-#pragma kaapi loop
-    for (dxBody *const *bodycurr = body; bodycurr != bodyend; ++bodycurr) {
-      dxBody *b = *bodycurr;
-      dxStepBody (b,stepsize);
+
+#if 0 // original code
+    {
+      dxBody *const *const bodyend = body + nb;
+      for (dxBody *const *bodycurr = body; bodycurr != bodyend; ++bodycurr) {
+	dxBody *b = *bodycurr;
+	dxStepBody (b,stepsize);
+      }
     }
+#else // loops of function
+    {
+      dxBody *const *const bodyend = body + nb;
+#pragma kaapi loop
+      for (dxBody *const *bodycurr = body; bodycurr != bodyend; ++bodycurr) {
+	dxBody *b = *bodycurr;
+	dxStepBody_0 (b,stepsize);
+      }
+    }
+    // not parallel
+    {
+      dxBody *const *const bodyend = body + nb;
+      for (dxBody *const *bodycurr = body; bodycurr != bodyend; ++bodycurr) {
+	dxBody *b = *bodycurr;
+	dxStepBody_1 (b,stepsize);
+      }
+    }
+    {
+      dxBody *const *const bodyend = body + nb;
+#pragma kaapi loop
+      for (dxBody *const *bodycurr = body; bodycurr != bodyend; ++bodycurr) {
+	dxBody *b = *bodycurr;
+	dxStepBody_2 (b,stepsize);
+      }
+    }
+#endif
   }
 
   {

@@ -253,7 +253,7 @@ static inline dReal sinc (dReal x)
 // given a body b, apply its linear and angular rotation over the time
 // interval h, thereby adjusting its position and orientation.
 
-void dxStepBody (dxBody *b, dReal h)
+void dxStepBody_0 (dxBody *b, dReal h)
 {
   // cap the angular velocity
   if (b->flags & dxBodyMaxAngularSpeed) {
@@ -331,7 +331,10 @@ void dxStepBody (dxBody *b, dReal h)
   // normalize the quaternion and convert it to a rotation matrix
   dNormalize4 (b->q);
   dQtoR (b->q,b->posr.R);
+}
 
+void dxStepBody_1 (dxBody *b, dReal h)
+{
   // notify all attached geoms that this body has moved
   for (dxGeom *geom = b->geom; geom; geom = dGeomGetBodyNext (geom))
     dGeomMoved (geom);
@@ -339,8 +342,10 @@ void dxStepBody (dxBody *b, dReal h)
   // notify the user
   if (b->moved_callback)
     b->moved_callback(b);
+}
 
-
+void dxStepBody_2 (dxBody *b, dReal h)
+{
   // damping
   if (b->flags & dxBodyLinearDamping) {
     const dReal lin_threshold = b->dampingp.linear_threshold;
@@ -358,6 +363,13 @@ void dxStepBody (dxBody *b, dReal h)
       dScaleVector3(b->avel, k);
     }
   }
+}
+
+void dxStepBody (dxBody *b, dReal h)
+{
+  dxStepBody_0(b, h);
+  dxStepBody_1(b, h);
+  dxStepBody_2(b, h);
 }
 
 

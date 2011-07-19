@@ -699,7 +699,6 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
 
       {
         // put J*tmp1 into rhs
-        unsigned ofsi = 0;
         const dJointWithInfo1 *jicurr = jointiinfos;
         const dJointWithInfo1 *const jiend = jicurr + nj;
 #pragma kaapi loop
@@ -729,6 +728,8 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
 
     } END_STATE_SAVE(context, lcpstate);
 
+    // parallelism issue: cf1[0] could be updated concurrently.
+    // solving require either reduction or atomic operations.
     {
       IFTIMING(dTimerNow ("compute constraint force"));
 

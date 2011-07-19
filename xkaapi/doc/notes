@@ -79,6 +79,22 @@ Since the compiler does not enter function calls in loop, this code
 cannot be parallelised. The solution is to introduce:
 #pragma kaapi inline (or follow or expand)
 
+
+.. concurrent updates
+{
+  for (i = 0; i < nj; ++i)
+  {
+    b1 = joints[i]->b1;
+    cf = cfarray + b1->tag;
+    cf[0] += ...;
+  }
+}
+
+solving requires either atomics or reduction:
+. atomics work in place, but may not scale as the number of core increases
+ . and what if the operation is more complex than a machine instruction -> critical section
+. reduction needs memory copy
+
 .. non random access containers
 
 --

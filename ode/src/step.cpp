@@ -838,7 +838,7 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
 	dxStepBody_0 (b,stepsize);
       }
     }
-    // not parallel
+    // not parallel since callbacks may not be executed concurrent safe
     {
       dxBody *const *const bodyend = body + nb;
       for (dxBody *const *bodycurr = body; bodycurr != bodyend; ++bodycurr) {

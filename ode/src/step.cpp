@@ -190,6 +190,31 @@ struct dJointWithInfo1
   dxJoint::Info1 info;
 };
 
+
+// kaapi temporary critical section
+
+#if defined(__KACC_C2C_PASS__)
+extern "C" long __sync_val_compare_and_swap(volatile long*, long, long);
+extern "C" void __sync_synchronize(void);
+#endif
+
+__attribute__((aligned(64)))
+static volatile long kaapi_big_lock = 0;
+
+static inline void pragma_kaapi_enter_critical(void)
+{
+ redo_lock:
+  while (kaapi_big_lock == 1) ;
+  if (__sync_val_compare_and_swap(&kaapi_big_lock, 0, 1) == 0) return ;
+  goto redo_lock;
+}
+
+static inline void pragma_kaapi_leave_critical(void)
+{
+  __sync_synchronize();
+  kaapi_big_lock = 0;
+}
+
 void dInternalStepIsland_x2 (dxWorldProcessContext *context, 
                              dxWorld *world, dxBody * const *body, int nb,
                              dxJoint * const *_joint, int _nj, dReal stepsize)
@@ -733,10 +758,11 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
 
       // compute the constraint force `cforce'
       // compute cforce = J'*lambda
-      unsigned ofsi = 0;
       const dJointWithInfo1 *jicurr = jointiinfos;
       const dJointWithInfo1 *const jiend = jicurr + nj;
+#pragma kaapi loop
       for (; jicurr != jiend; ++jicurr) {
+	const int ofsi = infom_integral[nj - (int)(jiend - jicurr)];
         const int infom = jicurr->info.m;
         dxJoint *joint = jicurr->joint;
         
@@ -755,40 +781,64 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
 
           dxBody* b1 = joint->node[0].body;
           dReal *cf1 = cforce + 8*b1->tag;
-          cf1[0] += (fb->f1[0] = data[0]);
-          cf1[1] += (fb->f1[1] = data[1]);
-          cf1[2] += (fb->f1[2] = data[2]);
-          cf1[4] += (fb->t1[0] = data[4]);
-          cf1[5] += (fb->t1[1] = data[5]);
-          cf1[6] += (fb->t1[2] = data[6]);
+
+          fb->f1[0] = data[0];
+          fb->f1[1] = data[1];
+          fb->f1[2] = data[2];
+          fb->t1[0] = data[4];
+          fb->t1[1] = data[5];
+          fb->t1[2] = data[6];
+
+	  pragma_kaapi_enter_critical();
+          cf1[0] += data[0]; // fb->f1[0];
+          cf1[1] += data[1]; // fb->f1[1];
+          cf1[2] += data[2]; // fb->f1[2];
+          cf1[4] += data[4]; // fb->t1[0];
+          cf1[5] += data[5]; // fb->t1[1];
+	  cf1[6] += data[6]; // fb->t1[2];
+	  pragma_kaapi_leave_critical();
 
           dxBody* b2 = joint->node[1].body;
           if (b2){
             Multiply1_8q1 (data, JJ + 8*infom, lambdarow, infom);
 
             dReal *cf2 = cforce + 8*b2->tag;
-            cf2[0] += (fb->f2[0] = data[0]);
-            cf2[1] += (fb->f2[1] = data[1]);
-            cf2[2] += (fb->f2[2] = data[2]);
-            cf2[4] += (fb->t2[0] = data[4]);
-            cf2[5] += (fb->t2[1] = data[5]);
-            cf2[6] += (fb->t2[2] = data[6]);
+
+            fb->f2[0] = data[0];
+            fb->f2[1] = data[1];
+            fb->f2[2] = data[2];
+            fb->t2[0] = data[4];
+            fb->t2[1] = data[5];
+            fb->t2[2] = data[6];
+
+	    pragma_kaapi_enter_critical();
+	    cf2[0] += data[0]; // fb->f2[0];
+	    cf2[1] += data[1]; // fb->f2[1];
+	    cf2[2] += data[2]; // fb->f2[2];
+	    cf2[4] += data[4]; // fb->t2[0];
+	    cf2[5] += data[5]; // fb->t2[1];
+	    cf2[6] += data[6]; // fb->t2[2];
+	    pragma_kaapi_leave_critical();
           }
         }
         else {
           // no feedback is required, let's compute cforce the faster way
           dxBody* b1 = joint->node[0].body;
           dReal *cf1 = cforce + 8*b1->tag;
+
+	  pragma_kaapi_enter_critical();
           MultiplyAdd1_8q1 (cf1, JJ, lambdarow, infom);
+	  pragma_kaapi_leave_critical();
           
           dxBody* b2 = joint->node[1].body;
           if (b2) {
             dReal *cf2 = cforce + 8*b2->tag;
+
+	    pragma_kaapi_enter_critical();
             MultiplyAdd1_8q1 (cf2, JJ + 8*infom, lambdarow, infom);
+	    pragma_kaapi_leave_critical();
           }
         }
-
-        ofsi += infom;
       }
     }
   } // if (m > 0)

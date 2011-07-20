@@ -10,6 +10,7 @@ rm ode/src/lib* ;
 rm ode/src/step.{o,lo,ti} ;
 rm ode/src/lcp.{o,lo,ti} ;
 rm ode/demo/demo_step ;
+rm ode/demo/demo_space_stress ;
 
 # make the project to build dotos
 make ;
@@ -21,6 +22,7 @@ case $1 in
     rm ode/src/step.{lo,ti} ;
     rm ode/src/lcp.{lo,ti} ;
     rm ode/demo/demo_step ;
+    rm ode/demo/demo_space_stress ;
 
     rm /tmp/o ;
 

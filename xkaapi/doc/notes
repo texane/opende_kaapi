@@ -99,3 +99,9 @@ solving requires either atomics or reduction:
 
 --
 . lcp solver
+
+
+--
+. todo
+ . atomic and critical clauses
+ . 

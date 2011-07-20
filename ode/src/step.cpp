@@ -510,7 +510,7 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
         const dJointWithInfo1 *const jiend = jicurr + nj;
 #pragma kaapi loop
         for (; jicurr != jiend; ++jicurr) {
-	  const unsigned ofsi = infom_integral[nj - (int)(jiend - jicurr)];
+	  const int ofsi = infom_integral[nj - (int)(jiend - jicurr)];
           const int infom = jicurr->info.m;
           dReal *const J1row = J + 2*8*ofsi;
           Jinfo.J1l = J1row;
@@ -547,7 +547,7 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
           const dJointWithInfo1 *const jiend = jicurr + nj;
 #pragma kaapi loop
           for (; jicurr != jiend; ++jicurr) {
-	    const unsigned ofsi = infom_integral[nj - (int)(jiend - jicurr)];
+	    const int ofsi = infom_integral[nj - (int)(jiend - jicurr)];
             const int infom = jicurr->info.m;
             dxJoint *joint = jicurr->joint;
             int b0 = joint->node[0].body->tag;
@@ -642,7 +642,7 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
           const dJointWithInfo1 *const jiend = jicurr + nj;
 #pragma kaapi loop
           for (; jicurr != jiend; ++jicurr) {
-	    const unsigned ofsi = infom_integral[nj - (int)(jiend - jicurr)];
+	    const int ofsi = infom_integral[nj - (int)(jiend - jicurr)];
             const int infom = jicurr->info.m;
             dReal *Arow = A + (mskip+1)*ofsi;
             dReal *JinvMrow = JinvM + 2*8*ofsi;
@@ -703,7 +703,7 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
         const dJointWithInfo1 *const jiend = jicurr + nj;
 #pragma kaapi loop
         for (; jicurr != jiend; ++jicurr) {
-	  const unsigned ofsi = infom_integral[nj - (int)(jiend - jicurr)];
+	  const int ofsi = infom_integral[nj - (int)(jiend - jicurr)];
           const int infom = jicurr->info.m;
           dxJoint *joint = jicurr->joint;
 

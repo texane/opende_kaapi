@@ -44,7 +44,7 @@
 #define DENSITY (5.0)		// density of all objects
 #define GPB 3			// maximum number of geometries per body
 #define MAX_CONTACTS 4		// maximum number of contact points per body
-#define WORLD_SIZE 100
+#define WORLD_SIZE 50
 
 
 // dynamics and collision objects

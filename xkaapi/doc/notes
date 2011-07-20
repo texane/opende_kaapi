@@ -44,8 +44,12 @@ be parallelized:
 Note that the order can be important.
 The obvious solution is to transform the above into 3 loops:
 {
+#pragma kaapi loop
   for (i = 0; i < N; ++i) f(b[i]);
+
   for (i = 0; i < N; ++i) g(b[i], globals);
+
+#pragma kaapi loop
   for (i = 0; i < N; ++i) h(b[i]);
 }
 
@@ -94,6 +98,12 @@ solving requires either atomics or reduction:
 . atomics work in place, but may not scale as the number of core increases
  . and what if the operation is more complex than a machine instruction -> critical section
 . reduction needs memory copy
+-> for the moment, we implement critical sections with kaapi_pragma_enter_critical
+
+. another way would be to modify the code such that a structure is built
+to maintain a list per b1->tag. the different list can be handled concurrently,
+and there is no contention problem. A list can be split if too large (ie. using
+adaptive methods), and we return in the above case.
 
 .. non random access containers
 

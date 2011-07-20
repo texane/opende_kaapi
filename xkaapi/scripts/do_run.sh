@@ -23,5 +23,5 @@ ODE_ROOT=$HOME/repo/opende_kaapi
     KAAPI_STACKSIZE=268435456 \
     KAAPI_CPUSET=$CPUSET \
     $NUMACTL_CMD \
-    ./demo_step -notex -noshadow
+    ./demo_space_stress -notex -noshadow
 )

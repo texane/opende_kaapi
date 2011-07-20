@@ -419,6 +419,7 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
   int m = 0;
 
   // at most 6 constraints per joint
+  // it is assumed that the mcurr variable below is < (nj + 1) * 6
   int* const infom_integral = context->AllocateArray<int>((nj + 1) * 6);
   if (nj) infom_integral[0] = 0;
 
@@ -582,13 +583,14 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
           // if joints i and j have at least one body in common. 
 
           BEGIN_STATE_SAVE(context, ofsstate) {
-            int *ofs = context->AllocateArray<int> (m);
+            int * const ofs = infom_integral;
             const int mskip = dPAD(m);
 
-            unsigned ofsi = 0;
             const dJointWithInfo1 *jicurr = jointiinfos;
             const dJointWithInfo1 *const jiend = jicurr + nj;
+#pragma kaapi loop
             for (int i = 0; jicurr != jiend; i++, ++jicurr) {
+	      const int ofsi = infom_integral[nj - (int)(jiend - jicurr)];
               const int infom = jicurr->info.m;
               dxJoint *joint = jicurr->joint;
 
@@ -610,7 +612,6 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
               }
 
               dxBody *jb1 = joint->node[1].body;
-              dIASSERT(jb1 != jb0);
               if (jb1)
               {
                 for (dxJointNode *n1=jb1->firstjoint; n1; n1=n1->next) {
@@ -626,9 +627,6 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
                   }
                 }
               }
-
-              ofs[i] = ofsi;
-              ofsi += infom;
             }
 
           } END_STATE_SAVE(context, ofsstate);

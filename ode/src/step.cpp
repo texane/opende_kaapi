@@ -198,8 +198,7 @@ extern "C" long __sync_val_compare_and_swap(volatile long*, long, long);
 extern "C" void __sync_synchronize(void);
 #endif
 
-__attribute__((aligned(64)))
-static volatile long kaapi_big_lock = 0;
+__attribute__((aligned(64))) static volatile long kaapi_big_lock = 0;
 
 static inline void pragma_kaapi_enter_critical(void)
 {
@@ -925,6 +924,9 @@ void dInternalStepIsland_x2 (dxWorldProcessContext *context,
   }
 
   IFTIMING(dTimerEnd());
+
+  static unsigned int step_count = 0;
+  printf("-- STEP: %u\n", step_count++);
   if (m > 0) IFTIMING(dTimerReport (stdout,1));
 
 }

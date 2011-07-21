@@ -9,6 +9,7 @@ cd $ODE_ROOT
 rm ode/src/lib* ;
 rm ode/src/step.{o,lo,ti} ;
 rm ode/src/lcp.{o,lo,ti} ;
+rm ode/src/fastldlt.{o,lo,ti} ;
 rm ode/demo/demo_step ;
 rm ode/demo/demo_space_stress ;
 
@@ -21,6 +22,7 @@ case $1 in
     rm ode/src/.libs/lib* ;
     rm ode/src/step.{lo,ti} ;
     rm ode/src/lcp.{lo,ti} ;
+    rm ode/src/fastldlt.{lo,ti} ;
     rm ode/demo/demo_step ;
     rm ode/demo/demo_space_stress ;
 
@@ -48,6 +50,17 @@ case $1 in
 	    -DdTRIMESH_ENABLED -DdTRIMESH_OPCODE -DdSINGLE \
 	    -g -O2 -MT lcp.lo -MD -MP -MF .deps/lcp.Tpo \
 	    -c -o lcp.lo lcp.cpp
+    )
+
+    (
+	cd ode/src ;
+	/bin/sh ../../libtool --tag=CXX --mode=compile \
+	    $HOME/install/xkaapi_rose/bin/kacc \
+	    -DHAVE_CONFIG_H -I.  -I../../include -D__ODE__ \
+	    -I../../OPCODE -I../../OPCODE/Ice \
+	    -DdTRIMESH_ENABLED -DdTRIMESH_OPCODE -DdSINGLE \
+	    -g -O2 -MT fastldlt.lo -MD -MP -MF .deps/fastldlt.Tpo \
+	    -c -o fastldlt.lo fastldlt.c
     )
 
     $HOME/install/xkaapi_rose/bin/kacc $CFLAGS \

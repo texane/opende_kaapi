@@ -168,12 +168,38 @@ static void dSolveL1_2 (const dReal *L, dReal *B, int n, int lskip1)
 }
 
 
+/* kaapi temporary critical section */
+
+#if defined(__KACC_C2C_PASS__)
+extern long __sync_val_compare_and_swap(volatile long*, long, long);
+extern void __sync_synchronize(void);
+#endif
+
+__attribute__((aligned(64))) static volatile long kaapi_big_lock = 0;
+
+static inline void pragma_kaapi_enter_critical(void)
+{
+ redo_lock:
+  while (kaapi_big_lock == 1) ;
+  if (__sync_val_compare_and_swap(&kaapi_big_lock, 0, 1) == 0) return ;
+  goto redo_lock;
+}
+
+static inline void pragma_kaapi_leave_critical(void)
+{
+  __sync_synchronize();
+  kaapi_big_lock = 0;
+}
+
 void _dFactorLDLT (dReal *A, dReal *d, int n, int nskip1)
 {  
   int i,j;
   dReal sum,*ell,*dee,dd,p1,p2,q1,q2,Z11,m11,Z21,m21,Z22,m22;
+  volatile dReal* const pZ11 = &Z11;
+  volatile dReal* const pZ21 = &Z21;
+  volatile dReal* const pZ22 = &Z22;
   if (n < 1) return;
-  
+
   for (i=0; i<=n-2; i += 2) {
     /* solve L*(D*l)=a, l is scaled elements in 2 x i block at A(i,0) */
     dSolveL1_2 (A,A+i*nskip1,i,nskip1);
@@ -182,9 +208,18 @@ void _dFactorLDLT (dReal *A, dReal *d, int n, int nskip1)
     Z11 = 0;
     Z21 = 0;
     Z22 = 0;
+
     ell = A+i*nskip1;
     dee = d;
-    for (j=i-6; j >= 0; j -= 6) {
+
+    /* TODO: remove when bug solved in kacc */
+    if (i - 6 < 0) goto fixme_skip;
+
+#pragma kaapi loop
+    for (j=i-6; j >= 0; j -= 6, ell += 6, dee += 6) {
+      dReal _Z11 = 0;
+      dReal _Z21 = 0;
+      dReal _Z22 = 0;
       p1 = ell[0];
       p2 = ell[nskip1];
       dd = dee[0];
@@ -195,9 +230,9 @@ void _dFactorLDLT (dReal *A, dReal *d, int n, int nskip1)
       m11 = p1*q1;
       m21 = p2*q1;
       m22 = p2*q2;
-      Z11 += m11;
-      Z21 += m21;
-      Z22 += m22;
+      _Z11 += m11;
+      _Z21 += m21;
+      _Z22 += m22;
       p1 = ell[1];
       p2 = ell[1+nskip1];
       dd = dee[1];
@@ -208,9 +243,9 @@ void _dFactorLDLT (dReal *A, dReal *d, int n, int nskip1)
       m11 = p1*q1;
       m21 = p2*q1;
       m22 = p2*q2;
-      Z11 += m11;
-      Z21 += m21;
-      Z22 += m22;
+      _Z11 += m11;
+      _Z21 += m21;
+      _Z22 += m22;
       p1 = ell[2];
       p2 = ell[2+nskip1];
       dd = dee[2];
@@ -221,9 +256,9 @@ void _dFactorLDLT (dReal *A, dReal *d, int n, int nskip1)
       m11 = p1*q1;
       m21 = p2*q1;
       m22 = p2*q2;
-      Z11 += m11;
-      Z21 += m21;
-      Z22 += m22;
+      _Z11 += m11;
+      _Z21 += m21;
+      _Z22 += m22;
       p1 = ell[3];
       p2 = ell[3+nskip1];
       dd = dee[3];
@@ -234,9 +269,9 @@ void _dFactorLDLT (dReal *A, dReal *d, int n, int nskip1)
       m11 = p1*q1;
       m21 = p2*q1;
       m22 = p2*q2;
-      Z11 += m11;
-      Z21 += m21;
-      Z22 += m22;
+      _Z11 += m11;
+      _Z21 += m21;
+      _Z22 += m22;
       p1 = ell[4];
       p2 = ell[4+nskip1];
       dd = dee[4];
@@ -247,9 +282,9 @@ void _dFactorLDLT (dReal *A, dReal *d, int n, int nskip1)
       m11 = p1*q1;
       m21 = p2*q1;
       m22 = p2*q2;
-      Z11 += m11;
-      Z21 += m21;
-      Z22 += m22;
+      _Z11 += m11;
+      _Z21 += m21;
+      _Z22 += m22;
       p1 = ell[5];
       p2 = ell[5+nskip1];
       dd = dee[5];
@@ -260,12 +295,36 @@ void _dFactorLDLT (dReal *A, dReal *d, int n, int nskip1)
       m11 = p1*q1;
       m21 = p2*q1;
       m22 = p2*q2;
-      Z11 += m11;
-      Z21 += m21;
-      Z22 += m22;
-      ell += 6;
-      dee += 6;
+      _Z11 += m11;
+      _Z21 += m21;
+      _Z22 += m22;
+
+      /* update ZNN */
+      pragma_kaapi_enter_critical();
+      *pZ11 += _Z11;
+      *pZ21 += _Z21;
+      *pZ22 += _Z22;
+      pragma_kaapi_leave_critical();
     }
+
+    /* xkaapi does not yet update affine variables */
+  fixme_skip:
+    if ((i - 6) >= 0)
+    {
+      static const int step = 6;
+      const int range_size = (i - 6 + 1) - 0;
+      int niter = range_size / step;
+      if (range_size % step) niter += 1;
+
+      j = (i - 6) - niter * 6;
+      ell = (A + i * nskip1) + niter * 6;
+      dee = d + niter * 6;
+    }
+    else
+    {
+      j = i - 6;
+    }
+
     /* compute left-over iterations */
     j += 6;
     for (; j > 0; j--) {

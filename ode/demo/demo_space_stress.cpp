@@ -40,7 +40,7 @@
 
 // some constants
 
-#define NUM 500			// max number of objects
+#define NUM 2000		// max number of objects
 #define DENSITY (5.0)		// density of all objects
 #define GPB 3			// maximum number of geometries per body
 #define MAX_CONTACTS 4		// maximum number of contact points per body

@@ -32,7 +32,7 @@ case $1 in
 
     (
 	cd ode/src ;
-	/bin/sh ../../libtool --tag=CXX --mode=compile \
+	/bin/bash ../../libtool --tag=CXX --mode=compile \
 	    $HOME/install/xkaapi_rose/bin/kacc \
 	    -DHAVE_CONFIG_H -I.  -I../../include -D__ODE__ \
 	    -I../../OPCODE -I../../OPCODE/Ice \
@@ -43,7 +43,7 @@ case $1 in
 
     (
 	cd ode/src ;
-	/bin/sh ../../libtool --tag=CXX --mode=compile \
+	/bin/bash ../../libtool --tag=CXX --mode=compile \
 	    $HOME/install/xkaapi_rose/bin/kacc \
 	    -DHAVE_CONFIG_H -I.  -I../../include -D__ODE__ \
 	    -I../../OPCODE -I../../OPCODE/Ice \
@@ -54,7 +54,7 @@ case $1 in
 
     (
 	cd ode/src ;
-	/bin/sh ../../libtool --tag=CXX --mode=compile \
+	/bin/bash ../../libtool --tag=CXX --mode=compile \
 	    $HOME/install/xkaapi_rose/bin/kacc \
 	    -DHAVE_CONFIG_H -I.  -I../../include -D__ODE__ \
 	    -I../../OPCODE -I../../OPCODE/Ice \

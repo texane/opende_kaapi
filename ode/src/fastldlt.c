@@ -194,9 +194,6 @@ void _dFactorLDLT (dReal *A, dReal *d, int n, int nskip1)
     ell = A+i*nskip1;
     dee = d;
 
-    /* TODO: remove when bug solved in kacc */
-    if (i - 6 < 0) goto fixme_skip;
-
 #pragma kaapi loop \
   reduction(reduce_sum:Z11, reduce_sum:Z21, reduce_sum:Z22)
     for (j=i-6; j >= 0; j -= 6, ell += 6, dee += 6) {
